@@ -1,42 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:Arial,sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
-        #gameContainer { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#f0f0f0; }
-        #gameContainer.show { display:flex; }
-        canvas { border:2px solid #333; background-color:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.2); }
-        #score { font-size:24px; margin:10px 0; color:#333; }
-        .button-container { margin-top:20px; display:flex; gap:10px; }
-        button { padding:10px 20px; font-size:16px; cursor:pointer; border:none; border-radius:5px; transition:all 0.3s ease; }
-        #restartBtn { background-color:#4CAF50; color:white; }
-        #restartBtn:hover { background-color:#45a049; transform:scale(1.05); }
-        #backBtn { background-color:#ff9800; color:white; }
-        #backBtn:hover { background-color:#e68900; transform:scale(1.05); }
-        #backBtn:active, #restartBtn:active { transform:scale(0.98); }
-        /* Mobile Controls */
-        #mobileControls { margin-top:20px; display:flex; flex-direction:column; align-items:center; }
-        #mobileControls button { font-size:24px; padding:15px; margin:5px; width:60px; height:60px; border-radius:10px; }
-        #mobileControls .row { display:flex; justify-content:center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:Arial,sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
+#gameContainer { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#f0f0f0; }
+#gameContainer.show { display:flex; }
+canvas { border:2px solid #333; background-color:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.2); }
+#score { font-size:24px; margin:10px 0; color:#333; }
+.button-container { margin-top:20px; display:flex; gap:10px; }
+button { padding:10px 20px; font-size:16px; cursor:pointer; border:none; border-radius:5px; transition:all 0.3s ease; }
+#restartBtn { background-color:#4CAF50; color:white; }
+#restartBtn:hover { background-color:#45a049; transform:scale(1.05); }
+#backBtn { background-color:#ff9800; color:white; }
+#backBtn:hover { background-color:#e68900; transform:scale(1.05); }
+#backBtn:active, #restartBtn:active { transform:scale(0.98); }
+
+/* Mobile Controls */
+#mobileControls { margin-top:20px; display:flex; flex-direction:column; align-items:center; }
+#mobileControls button { font-size:24px; padding:15px; margin:5px; width:60px; height:60px; border-radius:10px; }
+#mobileControls .row { display:flex; justify-content:center; }
+</style>
 </head>
 <body>
 
-<!-- Game Container -->
 <div id="gameContainer">
     <h1>Snake Game</h1>
     <div id="score">Score: 0 | Level: 1</div>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
+
     <div class="button-container">
         <button id="restartBtn">Restart Game</button>
         <button id="backBtn">Back to Menu</button>
     </div>
 
-    <!-- Mobile Controls -->
+    <!-- Mobile Buttons -->
     <div id="mobileControls">
         <div class="row"><button onclick="move('up')">⬆️</button></div>
         <div class="row">
@@ -48,7 +49,6 @@
 </div>
 
 <script>
-const gameContainer=document.getElementById('gameContainer');
 const canvas=document.getElementById('gameCanvas');
 const ctx=canvas.getContext('2d');
 
@@ -62,24 +62,24 @@ let score=0, level=1, speed=100;
 const minSpeed=50;
 let gameLoopTimeout=null;
 
-// Draw Game
+// Draw
 function drawGame(){
     ctx.fillStyle='#fff';
     ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle='#4CAF50';
-    for(let s of snake) ctx.fillRect(s.x*gridSize,s.y*gridSize,gridSize-2,gridSize-2);
+    snake.forEach(s=>ctx.fillRect(s.x*gridSize,s.y*gridSize,gridSize-2,gridSize-2));
     ctx.fillStyle='#FF0000';
     ctx.fillRect(food.x*gridSize,food.y*gridSize,gridSize-2,gridSize-2);
 }
 
-// Update Game
+// Update
 function updateGame(){
-    const head={x:snake[0].x+dx, y:snake[0].y+dy};
+    const head={x:snake[0].x+dx,y:snake[0].y+dy};
     snake.unshift(head);
 
     if(head.x===food.x && head.y===food.y){
         score++; document.getElementById('score').textContent='Score: '+score+' | Level: '+level;
-        food={ x:Math.floor(Math.random()*tileCount), y:Math.floor(Math.random()*tileCount) };
+        food={x:Math.floor(Math.random()*tileCount),y:Math.floor(Math.random()*tileCount)};
         if(score%5===0 && score>0){ level++; speed=Math.max(minSpeed,speed-10); document.getElementById('score').textContent='Score: '+score+' | Level: '+level; }
     } else snake.pop();
 
@@ -88,38 +88,34 @@ function updateGame(){
 }
 
 // Game Over
-function gameOver(){ alert('Game Over! Your score: '+score+' | Level: '+level); resetGame(); }
+function gameOver(){ alert('Game Over! Score: '+score+' | Level: '+level); resetGame(); }
 
-// Reset Game
+// Reset
 function resetGame(){ snake=[{x:10,y:10}]; food={x:15,y:15}; dx=0; dy=0; score=0; level=1; speed=100; document.getElementById('score').textContent='Score: 0 | Level: 1'; }
 
-// Keyboard Controls (Desktop)
-function changeDirection(e){
-    const LEFT=37, RIGHT=39, UP=38, DOWN=40;
-    if(e.keyCode===LEFT && dx!==1){ dx=-1; dy=0; }
-    if(e.keyCode===UP && dy!==1){ dx=0; dy=-1; }
-    if(e.keyCode===RIGHT && dx!==-1){ dx=1; dy=0; }
-    if(e.keyCode===DOWN && dy!==-1){ dx=0; dy=1; }
+// Keyboard (Desktop)
+document.addEventListener('keydown',e=>{
+    if(e.keyCode===37 && dx!==1){ dx=-1; dy=0; }
+    if(e.keyCode===38 && dy!==1){ dx=0; dy=-1; }
+    if(e.keyCode===39 && dx!==-1){ dx=1; dy=0; }
+    if(e.keyCode===40 && dy!==-1){ dx=0; dy=1; }
+});
+
+// Mobile Buttons
+function move(dir){
+    if(dir==='up' && dy!==1){ dx=0; dy=-1; }
+    if(dir==='down' && dy!==-1){ dx=0; dy=1; }
+    if(dir==='left' && dx!==1){ dx=-1; dy=0; }
+    if(dir==='right' && dx!==-1){ dx=1; dy=0; }
 }
 
-// Mobile Controls
-function move(direction){
-    if(direction==='up' && dy!==1){ dx=0; dy=-1; }
-    if(direction==='down' && dy!==-1){ dx=0; dy=1; }
-    if(direction==='left' && dx!==1){ dx=-1; dy=0; }
-    if(direction==='right' && dx!==-1){ dx=1; dy=0; }
-}
-
-// Event Listeners
-document.addEventListener('keydown',changeDirection);
 document.getElementById('restartBtn').addEventListener('click',resetGame);
 
 // Game Loop
 function gameLoop(){ updateGame(); drawGame(); gameLoopTimeout=setTimeout(gameLoop,speed); }
 
-// 🔹 Direct Start Feature
+// 🔹 Direct Start
 if(window.location.search==="?start=true") gameLoop();
 </script>
-
 </body>
 </html>
