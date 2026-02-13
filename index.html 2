@@ -66,7 +66,7 @@ let snake, food, obstacles;
 let dx, dy, score, level, speed;
 let gameInterval;
 
-// SOUND EFFECTS
+// SOUND EFFECTS (Note: External URLs may not work due to CORS; consider hosting locally or using free alternatives)
 const eatSound = new Audio("https://www.soundjay.com/button/sounds/button-3.mp3");
 const gameOverSound = new Audio("https://www.soundjay.com/misc/sounds/fail-buzzer-02.mp3");
 const startSound = new Audio("https://www.soundjay.com/button/sounds/button-16.mp3");
@@ -75,9 +75,9 @@ function startGame(){
     startSound.play();
 
     snake = [{x:10,y:10}];
-    food = randomPosition();
+    food = getSafePosition();
     obstacles = [];
-    dx = 1;
+    dx = 0; // Start with no movement to prevent instant collision
     dy = 0;
     score = 0;
     level = 1;
@@ -96,6 +96,9 @@ function gameLoop(){
 }
 
 function updateGame(){
+    // Only update if moving
+    if (dx === 0 && dy === 0) return;
+
     const head = {x: snake[0].x + dx, y: snake[0].y + dy};
     snake.unshift(head);
 
@@ -105,7 +108,7 @@ function updateGame(){
 
         if(score % 5 === 0){
             level++;
-            speed -= 15;
+            speed = Math.max(50, speed - 15); // Prevent speed from going below 50ms
             addObstacle();
             clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, speed);
@@ -114,7 +117,7 @@ function updateGame(){
         document.getElementById("score").innerText =
         "Score: " + score + " | Level: " + level;
 
-        food = randomPosition();
+        food = getSafePosition();
     } else {
         snake.pop();
     }
@@ -174,14 +177,27 @@ function randomPosition(){
     };
 }
 
+function getSafePosition(){
+    let pos;
+    do {
+        pos = randomPosition();
+    } while (
+        snake.some(segment => segment.x === pos.x && segment.y === pos.y) ||
+        obstacles.some(obs => obs.x === pos.x && obs.y === pos.y) ||
+        (food && food.x === pos.x && food.y === pos.y) // Avoid overlapping with existing food
+    );
+    return pos;
+}
+
 function addObstacle(){
-    obstacles.push(randomPosition());
+    obstacles.push(getSafePosition());
 }
 
 function gameOver(){
     gameOverSound.play();
-    alert("Game Over! Level: " + level);
+    alert("Game Over! Score: " + score + " | Level: " + level);
     clearInterval(gameInterval);
+    // Optionally reset or show restart option
 }
 
 // Desktop controls
