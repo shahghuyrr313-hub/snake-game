@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snake Game</title>
+<title>Snake Game Pro</title>
 
 <style>
 body{
     margin:0;
     text-align:center;
     font-family:Arial;
-    background:#222;
+    background:#111;
     color:white;
 }
 
@@ -25,10 +25,7 @@ button{
     padding:10px 20px;
     font-size:16px;
     margin:5px;
-}
-
-#mobileControls{
-    margin-top:10px;
+    cursor:pointer;
 }
 
 #mobileControls button{
@@ -41,9 +38,10 @@ button{
 
 <body>
 
-<h1>Snake Game</h1>
+<h1>Snake Game Pro</h1>
 <h2 id="score">Score: 0 | Level: 1</h2>
 <button onclick="startGame()">Start Game</button>
+
 <canvas id="gameCanvas" width="400" height="400"></canvas>
 
 <div id="mobileControls">
@@ -64,18 +62,21 @@ const ctx = canvas.getContext("2d");
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
 
-let snake;
-let food;
-let dx;
-let dy;
-let score;
-let level;
-let speed;
+let snake, food, obstacles;
+let dx, dy, score, level, speed;
 let gameInterval;
 
+// SOUND EFFECTS
+const eatSound = new Audio("https://www.soundjay.com/button/sounds/button-3.mp3");
+const gameOverSound = new Audio("https://www.soundjay.com/misc/sounds/fail-buzzer-02.mp3");
+const startSound = new Audio("https://www.soundjay.com/button/sounds/button-16.mp3");
+
 function startGame(){
+    startSound.play();
+
     snake = [{x:10,y:10}];
-    food = {x:15,y:15};
+    food = randomPosition();
+    obstacles = [];
     dx = 1;
     dy = 0;
     score = 0;
@@ -100,11 +101,12 @@ function updateGame(){
 
     if(head.x === food.x && head.y === food.y){
         score++;
+        eatSound.play();
 
-        // LEVEL SYSTEM
         if(score % 5 === 0){
             level++;
             speed -= 15;
+            addObstacle();
             clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, speed);
         }
@@ -112,28 +114,30 @@ function updateGame(){
         document.getElementById("score").innerText =
         "Score: " + score + " | Level: " + level;
 
-        food = {
-            x: Math.floor(Math.random() * tileCount),
-            y: Math.floor(Math.random() * tileCount)
-        };
+        food = randomPosition();
     } else {
         snake.pop();
     }
 
-    // WALL COLLISION
+    // Wall collision
     if(head.x < 0 || head.x >= tileCount ||
        head.y < 0 || head.y >= tileCount){
-        alert("Game Over!");
-        clearInterval(gameInterval);
+        gameOver();
     }
 
-    // SELF COLLISION
+    // Self collision
     for(let i=1;i<snake.length;i++){
         if(head.x === snake[i].x && head.y === snake[i].y){
-            alert("Game Over!");
-            clearInterval(gameInterval);
+            gameOver();
         }
     }
+
+    // Obstacle collision
+    obstacles.forEach(obs=>{
+        if(head.x === obs.x && head.y === obs.y){
+            gameOver();
+        }
+    });
 }
 
 function drawGame(){
@@ -153,9 +157,34 @@ function drawGame(){
                  food.y*gridSize,
                  gridSize-2,
                  gridSize-2);
+
+    ctx.fillStyle="black";
+    obstacles.forEach(obs=>{
+        ctx.fillRect(obs.x*gridSize,
+                     obs.y*gridSize,
+                     gridSize-2,
+                     gridSize-2);
+    });
 }
 
-// DESKTOP CONTROLS
+function randomPosition(){
+    return {
+        x: Math.floor(Math.random()*tileCount),
+        y: Math.floor(Math.random()*tileCount)
+    };
+}
+
+function addObstacle(){
+    obstacles.push(randomPosition());
+}
+
+function gameOver(){
+    gameOverSound.play();
+    alert("Game Over! Level: " + level);
+    clearInterval(gameInterval);
+}
+
+// Desktop controls
 document.addEventListener("keydown", function(e){
     if(e.keyCode===37 && dx!==1){ dx=-1; dy=0; }
     if(e.keyCode===38 && dy!==1){ dx=0; dy=-1; }
@@ -163,7 +192,7 @@ document.addEventListener("keydown", function(e){
     if(e.keyCode===40 && dy!==-1){ dx=0; dy=1; }
 });
 
-// MOBILE CONTROLS
+// Mobile controls
 function move(direction){
     if(direction==='up' && dy!==1){ dx=0; dy=-1; }
     if(direction==='down' && dy!==-1){ dx=0; dy=1; }
