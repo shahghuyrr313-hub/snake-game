@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+
+<style>
+body{
+    margin:0;
+    text-align:center;
+    font-family:Arial;
+    background:#222;
+    color:white;
+}
+
+canvas{
+    background:white;
+    display:block;
+    margin:20px auto;
+    border:3px solid black;
+}
+
+button{
+    padding:10px 20px;
+    font-size:16px;
+    margin:5px;
+}
+
+#mobileControls{
+    margin-top:10px;
+}
+
+#mobileControls button{
+    font-size:22px;
+    width:60px;
+    height:60px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Snake Game</h1>
+<h2 id="score">Score: 0 | Level: 1</h2>
+<button onclick="startGame()">Start Game</button>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+
+<div id="mobileControls">
+    <div>
+        <button onclick="move('up')">⬆️</button>
+    </div>
+    <div>
+        <button onclick="move('left')">⬅️</button>
+        <button onclick="move('down')">⬇️</button>
+        <button onclick="move('right')">➡️</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const gridSize = 20;
+const tileCount = canvas.width / gridSize;
+
+let snake;
+let food;
+let dx;
+let dy;
+let score;
+let level;
+let speed;
+let gameInterval;
+
+function startGame(){
+    snake = [{x:10,y:10}];
+    food = {x:15,y:15};
+    dx = 1;
+    dy = 0;
+    score = 0;
+    level = 1;
+    speed = 150;
+
+    document.getElementById("score").innerText =
+    "Score: 0 | Level: 1";
+
+    clearInterval(gameInterval);
+    gameInterval = setInterval(gameLoop, speed);
+}
+
+function gameLoop(){
+    updateGame();
+    drawGame();
+}
+
+function updateGame(){
+    const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+    snake.unshift(head);
+
+    if(head.x === food.x && head.y === food.y){
+        score++;
+
+        // LEVEL SYSTEM
+        if(score % 5 === 0){
+            level++;
+            speed -= 15;
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, speed);
+        }
+
+        document.getElementById("score").innerText =
+        "Score: " + score + " | Level: " + level;
+
+        food = {
+            x: Math.floor(Math.random() * tileCount),
+            y: Math.floor(Math.random() * tileCount)
+        };
+    } else {
+        snake.pop();
+    }
+
+    // WALL COLLISION
+    if(head.x < 0 || head.x >= tileCount ||
+       head.y < 0 || head.y >= tileCount){
+        alert("Game Over!");
+        clearInterval(gameInterval);
+    }
+
+    // SELF COLLISION
+    for(let i=1;i<snake.length;i++){
+        if(head.x === snake[i].x && head.y === snake[i].y){
+            alert("Game Over!");
+            clearInterval(gameInterval);
+        }
+    }
+}
+
+function drawGame(){
+    ctx.fillStyle="white";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="green";
+    snake.forEach(part=>{
+        ctx.fillRect(part.x*gridSize,
+                     part.y*gridSize,
+                     gridSize-2,
+                     gridSize-2);
+    });
+
+    ctx.fillStyle="red";
+    ctx.fillRect(food.x*gridSize,
+                 food.y*gridSize,
+                 gridSize-2,
+                 gridSize-2);
+}
+
+// DESKTOP CONTROLS
+document.addEventListener("keydown", function(e){
+    if(e.keyCode===37 && dx!==1){ dx=-1; dy=0; }
+    if(e.keyCode===38 && dy!==1){ dx=0; dy=-1; }
+    if(e.keyCode===39 && dx!==-1){ dx=1; dy=0; }
+    if(e.keyCode===40 && dy!==-1){ dx=0; dy=1; }
+});
+
+// MOBILE CONTROLS
+function move(direction){
+    if(direction==='up' && dy!==1){ dx=0; dy=-1; }
+    if(direction==='down' && dy!==-1){ dx=0; dy=1; }
+    if(direction==='left' && dx!==1){ dx=-1; dy=0; }
+    if(direction==='right' && dx!==-1){ dx=1; dy=0; }
+}
+</script>
+
+</body>
+</html>
