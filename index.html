@@ -61,6 +61,9 @@ let dx=0, dy=0;
 let score=0, level=1, speed=100;
 const minSpeed=50;
 let gameLoopTimeout=null;
+let level = 1;
+let speed = 100;
+const minSpeed = 50;
 
 // Draw
 function drawGame(){
@@ -73,8 +76,27 @@ function drawGame(){
 }
 
 // Update
-if(head.x === food.x && head.y === food.y){
+if(head.x===food.x && head.y===food.y){
+
     score++;
+
+    // LEVEL SYSTEM
+    if(score % 5 === 0){
+        level++;
+        speed = Math.max(minSpeed, speed - 10);
+    }
+
+    document.getElementById('score').textContent =
+    'Score: ' + score + ' | Level: ' + level;
+
+    food = {
+        x: Math.floor(Math.random()*tileCount),
+        y: Math.floor(Math.random()*tileCount)
+    };
+
+} else {
+    snake.pop();
+}
 
     // Level system
     if(score % 5 === 0 && score > 0){
@@ -96,7 +118,9 @@ if(head.x === food.x && head.y === food.y){
 function gameOver(){ alert('Game Over! Score: '+score+' | Level: '+level); resetGame(); }
 
 // Reset
-function resetGame(){ snake=[{x:10,y:10}]; food={x:15,y:15}; dx=0; dy=0; score=0; level=1; speed=100; document.getElementById('score').textContent='Score: 0 | Level: 1'; }
+function resetGame(level = 1;
+speed = 100;){ snake=[{x:10,y:10}]; food={x:15,y:15}; dx=0; dy=0; score=0; level=1; speed=100; document.getElementById('score').textContent =
+'Score: 0 | Level: 1'; }
 
 // Keyboard (Desktop)
 document.addEventListener('keydown',e=>{
@@ -120,7 +144,7 @@ document.getElementById('restartBtn').addEventListener('click',resetGame);
 function gameLoop(){
     updateGame();
     drawGame();
-    gameLoopTimeout = setTimeout(gameLoop, speed);
+    gameLoopTimeout=setTimeout(gameLoop, speed);
 }
 
 // 🔹 Direct Start
