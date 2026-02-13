@@ -32,6 +32,20 @@ button { padding:10px 20px; font-size:16px; cursor:pointer; border:none; border-
     <div id="score">Score: 0 | Level: 1</div>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
 
+    let score = 0;
+let level = 1;
+let speed = 100;
+const minSpeed = 50;
+
+    document.getElementById('score').textContent =
+'Score: ' + score + ' | Level: ' + level;
+
+    if(score % 5 === 0 && score > 0){
+    level++;
+    speed = Math.max(minSpeed, speed - 10);
+}
+
+
     <div class="button-container">
         <button id="restartBtn">Restart Game</button>
         <button id="backBtn">Back to Menu</button>
@@ -73,19 +87,24 @@ function drawGame(){
 }
 
 // Update
-function updateGame(){
-    const head={x:snake[0].x+dx,y:snake[0].y+dy};
-    snake.unshift(head);
+if(head.x === food.x && head.y === food.y){
+    score++;
 
-    if(head.x===food.x && head.y===food.y){
-        score++; document.getElementById('score').textContent='Score: '+score+' | Level: '+level;
-        food={x:Math.floor(Math.random()*tileCount),y:Math.floor(Math.random()*tileCount)};
-        if(score%5===0 && score>0){ level++; speed=Math.max(minSpeed,speed-10); document.getElementById('score').textContent='Score: '+score+' | Level: '+level; }
-    } else snake.pop();
+    // Level system
+    if(score % 5 === 0 && score > 0){
+        level++;
+        speed = Math.max(minSpeed, speed - 10);
+    }
 
-    if(head.x<0||head.x>=tileCount||head.y<0||head.y>=tileCount){ gameOver(); return; }
-    for(let i=1;i<snake.length;i++) if(head.x===snake[i].x && head.y===snake[i].y){ gameOver(); return; }
+    document.getElementById('score').textContent =
+    'Score: ' + score + ' | Level: ' + level;
+
+    food = {
+        x: Math.floor(Math.random() * tileCount),
+        y: Math.floor(Math.random() * tileCount)
+    };
 }
+
 
 // Game Over
 function gameOver(){ alert('Game Over! Score: '+score+' | Level: '+level); resetGame(); }
@@ -112,7 +131,11 @@ function move(dir){
 document.getElementById('restartBtn').addEventListener('click',resetGame);
 
 // Game Loop
-function gameLoop(){ updateGame(); drawGame(); gameLoopTimeout=setTimeout(gameLoop,speed); }
+function gameLoop(){
+    updateGame();
+    drawGame();
+    gameLoopTimeout = setTimeout(gameLoop, speed);
+}
 
 // 🔹 Direct Start
 if(window.location.search==="?start=true") gameLoop();
